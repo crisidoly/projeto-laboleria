@@ -9,7 +9,7 @@ export function getClientsById(id) {
 }
 
 export function getOrdersByClientId(id) {
-    return db.query('SELECT * FROM orders WHERE "clientId" = $1', [id]);
+    return db.query('SELECT * FROM orders WHERE clientid = $1', [id]);
 }
 
 export async function selectClientsById(clientId) {

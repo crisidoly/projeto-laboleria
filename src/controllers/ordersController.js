@@ -1,8 +1,9 @@
-import { selectClientsById } from "../repositories/clientsRepository.js"
-import { selectCakesById } from "../repositories/cakesRepository.js"
-import { getCompleteOrders, insertOrders } from "../repositories/ordersRepository.js";
 import dayjs from "dayjs";
 import { db } from "../database/databaseConnection.js";
+import { selectClientsById } from "../repositories/clientsRepository.js"
+import { selectCakesById } from "../repositories/cakesRepository.js"
+import { insertOrders } from "../repositories/ordersRepository.js";
+
 
 
 export async function postOrder(req, res){
@@ -25,7 +26,8 @@ export async function postOrder(req, res){
     }
 
     const totalPrice = (cakeExist.rows[0].price) * quantity;
-    const createdAt = dayjs().format('YYYY-MM-DD');
+    const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    
 
     try{
         await insertOrders(clientId, cakeId, quantity, totalPrice, createdAt);
@@ -91,6 +93,63 @@ export async function getOrders(req, res) {
     } catch (error) {
       console.log(error);
       return res.sendStatus(500);
+    }
+  }
+  
+  export async function getOrdersId(req, res) {
+    const { id } = req.params;
+  
+    try {
+      const orders = await db.query(
+        `
+        SELECT orders.*,
+        clients.id AS "id",
+        clients.name AS "name",
+        clients.address AS "adress",
+        clients.phone AS "phone",
+        cakes.id AS "id",
+        cakes.name AS "name",     
+        cakes.price AS "price",
+        cakes.image AS "image",
+        cakes.description AS "description"
+        FROM orders
+          JOIN clients ON clients.id = orders."clientid"
+          JOIN cakes ON cakes.id = orders."cakeid"
+          WHERE orders.id = $1
+          `,
+        [id]
+      );
+  
+      if (orders.rowCount === 0) {
+        return res.sendStatus(404);
+      }
+  
+      const order = orders.rows[0];
+  
+      const orderResult = {
+        id: order.id,
+        client: {
+          id: order.id,
+          name: order.name,
+          address: order.adress,
+          phone: order.phone,
+        },
+        cake: {
+          id: order.id,
+          name: order.name,
+          price: order.price,
+          image: order.image,
+          description: order.description,
+        },
+        createdAt: order.createdat,
+        quantity: order.quantity,
+        totalPrice: order.totalPrice,
+      };
+  
+      res.send(orderResult);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
     }
   }
   
