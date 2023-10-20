@@ -49,12 +49,12 @@ export async function getOrders(req, res) {
           clients.name AS "name",
           clients.address AS "adress",
           clients.phone AS "phone",
-
           cakes.id AS "cakeid",
           cakes.name AS "name",
           cakes.price AS "price",
           cakes.image AS "image",
           cakes.description AS "description"
+
         FROM orders
         JOIN clients ON clients.id = orders."clientid"
         JOIN cakes ON cakes.id = orders."cakeid"
